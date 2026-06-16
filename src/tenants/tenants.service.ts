@@ -1,0 +1,80 @@
+import { Injectable, ConflictException, Logger, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Tenant, TenantDocument } from './schemas/tenant.schema';
+import { CreateTenantDto } from './dto/create-tenant.dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+
+@Injectable()
+export class TenantsService {
+  private readonly logger = new Logger(TenantsService.name);
+
+  constructor(
+    @InjectModel(Tenant.name) private tenantModel: Model<TenantDocument>,
+    private readonly httpService: HttpService,
+  ) {}
+
+  async create(createTenantDto: CreateTenantDto): Promise<Tenant> {
+    const existingTenant = await this.tenantModel.findOne({ cnpj: createTenantDto.cnpj }).exec();
+    
+    if (existingTenant) {
+      throw new ConflictException('Já existe um cliente cadastrado com este CNPJ.');
+    }
+
+    const newTenant = new this.tenantModel(createTenantDto);
+    const savedTenant = await newTenant.save();
+
+    try {
+      const directorData = createTenantDto.responsibles[0];
+      
+      const payload = {
+        name: directorData.name,
+        email: directorData.email,
+        cpf: directorData.cpf,
+        phone: directorData.phone,
+        password: directorData.password,
+        role: 'DIRECTOR',
+        tenantName: savedTenant.tradeName,
+        tenantId: savedTenant._id.toString(),
+        permissions: createTenantDto.projects[0]?.allowedModules || [] 
+      };
+
+      const fleetBackendUrl = process.env.FLEET_BACKEND_URL || 'http://localhost:3000';
+      const apiKey = process.env.INTERNAL_API_KEY || 'chave_secreta_cashew_enterprise_2026';
+
+      await firstValueFrom(
+        this.httpService.post(`${fleetBackendUrl}/auth/provision-director`, payload, {
+          headers: { 'x-api-key': apiKey }
+        })
+      );
+
+      this.logger.log(`[SUCESSO] Diretor provisionado no Frotas para: ${savedTenant.tradeName}`);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[FALHA] Erro ao provisionar Diretor no Frotas: ${errorMessage}`);
+    }
+
+    return savedTenant;
+  }
+
+  async updateStatus(id: string, status: string): Promise<Tenant> {
+    const updatedTenant = await this.tenantModel
+      .findByIdAndUpdate(
+        id,
+        { status: status },
+        { new: true }
+      )
+      .exec();
+
+    if (!updatedTenant) {
+      throw new NotFoundException('Cliente não encontrado no sistema.');
+    }
+    return updatedTenant;
+  }
+
+  async findAll(): Promise<Tenant[]> {
+    return this.tenantModel.find().exec();
+  }
+}
