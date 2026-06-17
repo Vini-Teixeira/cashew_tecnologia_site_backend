@@ -63,14 +63,37 @@ export class TenantsService {
     const updatedTenant = await this.tenantModel
       .findByIdAndUpdate(
         id,
-        { status: status },
-        { new: true }
+        { status: status }, 
+        { new: true }       
       )
       .exec();
 
     if (!updatedTenant) {
       throw new NotFoundException('Cliente não encontrado no sistema.');
     }
+
+    const isActive = status === 'ACTIVE'; 
+    
+    try {
+      const frotasUrl = process.env.FROTAS_API_URL || 'http://localhost:3000/api'; 
+      
+      await fetch(`${frotasUrl}/auth/tenant-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.INTERNAL_API_KEY || 'sua_chave_secreta_interna',
+        },
+        body: JSON.stringify({
+          tenantId: id,
+          isActive: isActive
+        })
+      });
+      
+      console.log(`📡 [Ponte Cashew -> Frotas] Status do Tenant atualizado para isActive: ${isActive}`);
+    } catch (error) {
+      console.error('🔥 Falha ao comunicar com o servidor do Gestão de Frotas:', error);
+    }
+
     return updatedTenant;
   }
 
