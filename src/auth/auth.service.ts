@@ -50,21 +50,19 @@ export class AuthService {
 
     try {
       const { data } = await firstValueFrom(
-        this.httpService
-          .post(`${fleetUrl}/auth/tenant-login`, loginDto, {
-            headers: { 'x-api-key': internalApiKey },
-          })
-          .pipe(
-            catchError((error) => {
-              throw new UnauthorizedException(
-                'Credenciais inválidas ou usuário não encontrado em nenhum ecossistema.',
-              );
-            }),
-          ),
+        this.httpService.post(`${fleetUrl}/auth/tenant-login`, loginDto, {
+          headers: { 'x-api-key': internalApiKey },
+        })
       );
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
+      // 🚀 Agora sim! O erro real será impresso nos logs da Railway
+      console.error(
+        'ERRO NA DELEGAÇÃO PARA FROTAS:', 
+        error.response?.data || error.message
+      );
+      
       throw new UnauthorizedException(
         'Credenciais inválidas ou usuário não encontrado em nenhum ecossistema.',
       );
