@@ -18,12 +18,10 @@ export class ResponsibleDto {
   @IsNotEmpty({ message: 'O telefone do responsável é obrigatório.' })
   phone!: string;
 
-  // 🚀 O CPF é vital para o Login Universal no Frotas
   @IsString()
   @IsNotEmpty({ message: 'O CPF é obrigatório.' })
   cpf!: string;
 
-  // 🚀 A senha inicial definida por você e seu sócio
   @IsString()
   @IsNotEmpty({ message: 'A senha inicial é obrigatória.' })
   password!: string;
@@ -44,7 +42,6 @@ export class ProjectConfigDto {
   @IsOptional()
   customDomain?: string;
 
-  // 🚀 A matriz de permissões para controlar o App do Gestor
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -63,6 +60,18 @@ export class CreateTenantDto {
   @IsString()
   @IsNotEmpty({ message: 'O CNPJ é obrigatório.' })
   cnpj!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'O endereço da base principal é obrigatório.' })
+  address!: string;
+
+  @IsNumber()
+  @IsNotEmpty({ message: 'A latitude é obrigatória. Selecione um endereço no mapa.' })
+  latitude!: number;
+
+  @IsNumber()
+  @IsNotEmpty({ message: 'A longitude é obrigatória. Selecione um endereço no mapa.' })
+  longitude!: number;
 
   @IsEnum(['ACTIVE', 'IN_DEFAULT', 'SUSPENDED', 'CANCELED'])
   @IsOptional()

@@ -57,7 +57,6 @@ export class AuthService {
 
       return data;
     } catch (error: any) {
-      // 🚀 Agora sim! O erro real será impresso nos logs da Railway
       console.error(
         'ERRO NA DELEGAÇÃO PARA FROTAS:', 
         error.response?.data || error.message

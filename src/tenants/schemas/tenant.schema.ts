@@ -52,6 +52,15 @@ export class Tenant {
   @Prop({ required: true, unique: true })
   cnpj!: string;
 
+  @Prop({ required: true })
+  address!: string;
+
+  @Prop({ required: true, type: Number })
+  latitude!: number;
+
+  @Prop({ required: true, type: Number })
+  longitude!: number;
+
   @Prop({ 
     required: true, 
     enum: ['ACTIVE', 'IN_DEFAULT', 'SUSPENDED', 'CANCELED'], 
