@@ -12,6 +12,8 @@ import * as bcrypt from 'bcrypt';
 import { Admin, AdminDocument } from './schemas/admin.schema';
 import { CreateAdminDto } from './dto/create-admin.dto';
 
+//Comentário GIT
+
 @Injectable()
 export class AdminsService implements OnModuleInit {
   private readonly logger = new Logger(AdminsService.name);
