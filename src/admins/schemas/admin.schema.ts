@@ -12,13 +12,19 @@ export class Admin {
   email!: string;
 
   @Prop({ required: true })
-  password?: string;
+  password!: string;
+
+  @Prop()
+  phone?: string;
 
   @Prop({ required: true, default: 'SUPER_ADMIN' })
   role!: string;
 
   @Prop({ default: true })
   isActive!: boolean;
+
+  @Prop()
+  photoUrl?: string;
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);
