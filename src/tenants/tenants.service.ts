@@ -78,6 +78,21 @@ export class TenantsService {
       this.logger.error(`[FALHA] Erro ao provisionar Base no Frotas`);
     }
 
+    try {
+      const payloadParameters = {
+        tenantId: savedTenant._id.toString()
+      };
+
+      await firstValueFrom(
+        this.httpService.post(`${fleetBackendUrl}/parameters/provision`, payloadParameters, {
+          headers: { 'x-api-key': apiKey }
+        })
+      );
+      this.logger.log(`[SUCESSO] Parâmetros padrão provisionados para: ${savedTenant.tradeName}`);
+    } catch (error) {
+      this.logger.error(`[FALHA] Erro ao provisionar Parâmetros no Frotas`);
+    }
+
     return savedTenant;
   }
 
