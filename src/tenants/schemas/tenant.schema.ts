@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type TenantDocument = HydratedDocument<Tenant>;
 
@@ -22,6 +22,25 @@ export class Responsible {
 }
 const ResponsibleSchema = SchemaFactory.createForClass(Responsible);
 
+@Schema({ _id: true })
+export class OperationalBase {
+  @Prop({ required: true })
+  name!: string;
+
+  @Prop({ required: true })
+  address!: string;
+
+  @Prop({ required: true, type: Number })
+  latitude!: number;
+
+  @Prop({ required: true, type: Number })
+  longitude!: number;
+
+  @Prop({ default: false })
+  isPrimary!: boolean;
+}
+const OperationalBaseSchema = SchemaFactory.createForClass(OperationalBase);
+
 @Schema({ _id: false })
 export class ProjectConfig {
   @Prop({ required: true })
@@ -32,6 +51,15 @@ export class ProjectConfig {
 
   @Prop({ required: true })
   totalLicenses!: number;
+
+  @Prop({ required: true, default: 0 })
+  monthlyFee!: number;
+
+  @Prop({ default: 0 })
+  setupFee!: number;
+
+  @Prop({ required: true, min: 1, max: 31, default: 10 })
+  billingDay!: number;
 
   @Prop()
   customDomain?: string;
@@ -52,14 +80,8 @@ export class Tenant {
   @Prop({ required: true, unique: true })
   cnpj!: string;
 
-  @Prop({ required: true })
-  address!: string;
-
-  @Prop({ required: true, type: Number })
-  latitude!: number;
-
-  @Prop({ required: true, type: Number })
-  longitude!: number;
+  @Prop({ type: [OperationalBaseSchema], default: [] })
+  bases!: OperationalBase[];
 
   @Prop({ 
     required: true, 
@@ -73,6 +95,12 @@ export class Tenant {
 
   @Prop({ type: [ProjectConfigSchema], default: [] })
   projects!: ProjectConfig[];
+
+  @Prop()
+  gatewayCustomerId?: string; 
+
+  @Prop()
+  gatewaySubscriptionId?: string;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsArray, ValidateNested, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, ValidateNested, IsEnum, IsNumber, IsOptional, IsBoolean, Min, Max } from 'class-validator';
 
 export class ResponsibleDto {
   @IsString()
@@ -27,6 +27,28 @@ export class ResponsibleDto {
   password!: string;
 }
 
+export class OperationalBaseDto {
+  @IsString()
+  @IsNotEmpty({ message: 'O nome da base é obrigatório (ex: Matriz, Filial Sul).' })
+  name!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'O endereço da base é obrigatório.' })
+  address!: string;
+
+  @IsNumber()
+  @IsNotEmpty({ message: 'A latitude é obrigatória. Selecione um endereço no mapa.' })
+  latitude!: number;
+
+  @IsNumber()
+  @IsNotEmpty({ message: 'A longitude é obrigatória. Selecione um endereço no mapa.' })
+  longitude!: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isPrimary?: boolean;
+}
+
 export class ProjectConfigDto {
   @IsString()
   @IsNotEmpty({ message: 'O nome do projeto é obrigatório.' })
@@ -37,6 +59,20 @@ export class ProjectConfigDto {
 
   @IsNumber()
   totalLicenses!: number;
+
+  @IsNumber()
+  @IsNotEmpty({ message: 'O valor da mensalidade é obrigatório.' })
+  monthlyFee!: number;
+
+  @IsNumber()
+  @IsOptional()
+  setupFee?: number;
+
+  @IsNumber()
+  @Min(1)
+  @Max(31)
+  @IsNotEmpty({ message: 'O dia de vencimento é obrigatório.' })
+  billingDay!: number;
 
   @IsString()
   @IsOptional()
@@ -61,17 +97,11 @@ export class CreateTenantDto {
   @IsNotEmpty({ message: 'O CNPJ é obrigatório.' })
   cnpj!: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'O endereço da base principal é obrigatório.' })
-  address!: string;
-
-  @IsNumber()
-  @IsNotEmpty({ message: 'A latitude é obrigatória. Selecione um endereço no mapa.' })
-  latitude!: number;
-
-  @IsNumber()
-  @IsNotEmpty({ message: 'A longitude é obrigatória. Selecione um endereço no mapa.' })
-  longitude!: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OperationalBaseDto)
+  @IsNotEmpty({ message: 'Pelo menos uma base operacional deve ser cadastrada.' })
+  bases!: OperationalBaseDto[];
 
   @IsEnum(['ACTIVE', 'IN_DEFAULT', 'SUSPENDED', 'CANCELED'])
   @IsOptional()
